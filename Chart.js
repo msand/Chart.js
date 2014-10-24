@@ -238,7 +238,7 @@
 				if (filterCallback(currentItem)){
 					return currentItem;
 				}
-			};
+			}
 		},
 		findPreviousWhere = helpers.findPreviousWhere = function(arrayToSearch, filterCallback, startIndex){
 			// Default to end of the array
@@ -250,7 +250,7 @@
 				if (filterCallback(currentItem)){
 					return currentItem;
 				}
-			};
+			}
 		},
 		inherits = helpers.inherits = function(extensions){
 			//Basic javascript inheritance based on the model created in Backbone.js
@@ -2531,20 +2531,17 @@
 						highlightStroke : dataset.pointHighlightStroke || dataset.pointStrokeColor
 					}));
 				},this);
-
-				this.buildScale(data.labels);
-
-
-				this.eachPoints(function(point, index){
-					helpers.extend(point, {
-						x: this.scale.calculateX(index),
-						y: this.scale.endPoint
-					});
-					point.save();
-				}, this);
-
 			},this);
 
+			this.buildScale(data.labels);
+
+			this.eachPoints(function(point, index){
+				helpers.extend(point, {
+					x: this.scale.calculateX(index),
+					y: this.scale.endPoint
+				});
+				point.save();
+			}, this);
 
 			this.render();
 		},
