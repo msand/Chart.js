@@ -1423,6 +1423,9 @@
 			this.valuesCount--;
 			this.fit();
 		},
+		getXLabel : function(index) {
+			return (index > -1 && index < this.xLabels.length) ? this.xLabels[index] : null;
+		},
 		// Fitting loop to rotate x Labels and figure out what fits there, and also calculate how many Y steps to use
 		fit: function(){
 			// First we need the width of the yLabels, assuming the xLabels aren't rotated
@@ -2062,7 +2065,7 @@
 
 			},this);
 
-			this.buildScale(data.labels);
+			this.buildScale(data.labels || []);
 
 			this.BarClass.prototype.base = this.scale.endPoint;
 
@@ -2470,7 +2473,6 @@
 
 	};
 
-
 	Chart.Type.extend({
 		name: "Line",
 		defaults : defaultConfig,
@@ -2488,6 +2490,7 @@
 			});
 
 			this.datasets = [];
+			data.labels = data.labels || []; // initialize an empty scale in case we have an empty chart
 
 			//Set up tooltip events on the chart
 			if (this.options.showTooltips){
@@ -2505,6 +2508,16 @@
 			}
 
 			//Iterate through each of the datasets, and build this into a property of the chart
+			helpers.each(data.datasets, this.addDataset, this);
+
+			this.eachPoints(function(point, index){
+				helpers.extend(point, {
+					x: this.scale.calculateX(index),
+					y: this.scale.endPoint
+				});
+				point.save();
+			}, this);
+			
 			helpers.each(data.datasets,function(dataset){
 
 				var datasetObject = {
@@ -2626,22 +2639,23 @@
 				});
 			}
 
-
 			this.scale = new Chart.Scale(scaleOptions);
 		},
 		addData : function(valuesArray,label){
 			//Map the values array for each of the datasets
 
 			helpers.each(valuesArray,function(value,datasetIndex){
-				//Add a new point for each piece of data, passing any required data to draw.
-				this.datasets[datasetIndex].points.push(new this.PointClass({
-					value : value,
-					label : label,
-					x: this.scale.calculateX(this.scale.valuesCount+1),
-					y: this.scale.endPoint,
-					strokeColor : this.datasets[datasetIndex].pointStrokeColor,
-					fillColor : this.datasets[datasetIndex].pointColor
-				}));
+					if (helpers.isNumber(value)){
+					//Add a new point for each piece of data, passing any required data to draw.
+						this.datasets[datasetIndex].points.push(new this.PointClass({
+							value : value,
+							label : label,
+							x: this.scale.calculateX(this.scale.valuesCount+1),
+							y: this.scale.endPoint,
+							strokeColor : this.datasets[datasetIndex].pointStrokeColor,
+							fillColor : this.datasets[datasetIndex].pointColor
+						}));
+					}
 			},this);
 
 			this.scale.addXLabel(label);
@@ -2655,6 +2669,73 @@
 				dataset.points.shift();
 			},this);
 			this.update();
+		},
+		addDataset : function(dataset, update) {
+			var datasetObject = {
+				id: dataset.id || dataset.label || -1,
+				label : dataset.label || null,
+				fillColor : dataset.fillColor,
+				strokeColor : dataset.strokeColor,
+				pointColor : dataset.pointColor,
+				pointStrokeColor : dataset.pointStrokeColor,
+				points : []
+			};
+
+			this.datasets.push(datasetObject);
+
+			helpers.each(dataset.data,function(dataPoint,index){
+				//Best way to do this? or in draw sequence...?
+				if (helpers.isNumber(dataPoint)){
+					//Add a new point for each piece of data, passing any required data to draw.
+					datasetObject.points.push(new this.PointClass({
+						value : dataPoint,
+						label : this.scale.getXLabel(index),
+						datasetLabel: dataset.label,
+						strokeColor : dataset.pointStrokeColor,
+						fillColor : dataset.pointColor,
+						highlightFill : dataset.pointHighlightFill || dataset.pointColor,
+						highlightStroke : dataset.pointHighlightStroke || dataset.pointStrokeColor,
+						x: this.scale.calculateX(index),
+						y: this.scale.endPoint
+					}));
+				}
+			},this);
+
+			if (update) {
+				this.update();
+			}
+			
+			return datasetObject;
+		},
+		removeDataset : function(id, update) {
+			if (typeof(id) === 'number' && id > -1 && id < this.datasets.length) {
+				this.datasets.splice(id, 1);
+			} else {
+				for (var index = 0; index < this.datasets.length; ++index) {
+					if (this.datasets[index].id === id ) {
+						this.datasets.splice(index, 1);
+						break;
+					}
+				}
+			}
+			
+			if (update) {
+				this.update();
+			}
+		},
+		clearDatasets : function(update) {
+			this.datasets = [];
+
+			if (update) {
+				this.update();
+			}
+		},
+		setLabels : function(labels, update) {
+			this.buildScale(labels);
+			
+			if (update) {
+				this.update();
+			}
 		},
 		reflow : function(){
 			var newScaleProps = helpers.extend({
