@@ -118,7 +118,7 @@
 
 			},this);
 
-			this.buildScale(data.labels);
+			this.buildScale(data.labels || []);
 
 			this.BarClass.prototype.base = this.scale.endPoint;
 
