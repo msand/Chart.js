@@ -66,6 +66,7 @@
 
 			this.datasets = [];
 			data.labels = data.labels || []; // initialize an empty scale in case we have an empty chart
+			this.buildScale(data.labels);
 
 			//Set up tooltip events on the chart
 			if (this.options.showTooltips){
@@ -84,44 +85,6 @@
 
 			//Iterate through each of the datasets, and build this into a property of the chart
 			helpers.each(data.datasets, this.addDataset, this);
-
-			this.eachPoints(function(point, index){
-				helpers.extend(point, {
-					x: this.scale.calculateX(index),
-					y: this.scale.endPoint
-				});
-				point.save();
-			}, this);
-			
-			helpers.each(data.datasets,function(dataset){
-
-				var datasetObject = {
-					label : dataset.label || null,
-					fillColor : dataset.fillColor,
-					strokeColor : dataset.strokeColor,
-					pointColor : dataset.pointColor,
-					pointStrokeColor : dataset.pointStrokeColor,
-					points : []
-				};
-
-				this.datasets.push(datasetObject);
-
-
-				helpers.each(dataset.data,function(dataPoint,index){
-					//Add a new point for each piece of data, passing any required data to draw.
-					datasetObject.points.push(new this.PointClass({
-						value : dataPoint,
-						label : data.labels[index],
-						datasetLabel: dataset.label,
-						strokeColor : dataset.pointStrokeColor,
-						fillColor : dataset.pointColor,
-						highlightFill : dataset.pointHighlightFill || dataset.pointColor,
-						highlightStroke : dataset.pointHighlightStroke || dataset.pointStrokeColor
-					}));
-				},this);
-			},this);
-
-			this.buildScale(data.labels);
 
 			this.eachPoints(function(point, index){
 				helpers.extend(point, {
