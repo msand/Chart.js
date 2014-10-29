@@ -84,15 +84,15 @@
 			}
 
 			//Iterate through each of the datasets, and build this into a property of the chart
-			helpers.each(data.datasets, this.addDataset, this);
+			helpers.each(data.datasets, function (dataset, index) {
+                this.addDataset(dataset);
+            }, this);
 
-			this.eachPoints(function(point, index){
-				helpers.extend(point, {
-					x: this.scale.calculateX(index),
-					y: this.scale.endPoint
-				});
+            this.buildScale(data.labels);
+
+			this.eachPoints(function(point){
 				point.save();
-			}, this);
+			});
 
 			this.render();
 		},
