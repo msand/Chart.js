@@ -1499,7 +1499,7 @@
 				var xGridWidth = Math.floor(this.calculateX(1) - this.calculateX(0)) - 6;
 
 				//Max label rotate should be 90 - also act as a loop counter
-				while ((this.xLabelWidth > xGridWidth && this.xLabelRotation === 0) || (this.xLabelWidth > xGridWidth && this.xLabelRotation <= 90 && this.xLabelRotation > 0)){
+				while (!this.disableRotation && this.xLabelWidth > xGridWidth && this.xLabelRotation <= 90 && this.xLabelRotation >= 0){
 					cosRotation = Math.cos(toRadians(this.xLabelRotation));
 
 					firstRotated = cosRotation * firstWidth;
