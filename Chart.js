@@ -1627,6 +1627,10 @@
 
 					// Small lines at the bottom of the base grid line
 					ctx.beginPath();
+					if (label && label.length) {
+						ctx.strokeStyle = this.textColor;
+						ctx.lineWidth *= 2;
+					}
 					ctx.moveTo(linePos,this.endPoint);
 					ctx.lineTo(linePos,this.endPoint + 5);
 					ctx.stroke();
